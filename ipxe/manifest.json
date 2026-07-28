@@ -1,0 +1,9 @@
+{
+  "name": "ipxe",
+  "description": "iPXE bootloaders",
+  "bootfiles": {
+    "bios": "undionly.kpxe",
+    "uefi": "ipxe.efi",
+    "arm64": "ipxe-arm64.efi"
+  }
+}

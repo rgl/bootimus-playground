@@ -63,6 +63,26 @@ Access the Bootimus Admin Panel and login as the `admin` user:
 xdg-open http://localhost:8081
 ```
 
+Configure Bootimus:
+
+```bash
+bootimus_admin_token="$(curl \
+    --silent \
+    --show-error \
+    -X POST \
+    http://localhost:8081/api/login \
+    -H 'Content-Type: application/json' \
+    -d "$(jq \
+        --null-input \
+        --arg u admin \
+        --arg p "$bootimus_admin_password" \
+        '{username: $u, password: $p}')" \
+    | jq -r .data.token)"
+
+bootimus_admin_token="$bootimus_admin_token" \
+    ./configure.sh
+```
+
 Show the Bootimus generated boot menu:
 
 ```bash
@@ -85,4 +105,8 @@ Review the commands:
 docker inspect bootimus | jq
 docker exec bootimus ps -efww --forest
 docker exec bootimus /bootimus serve --help
+
+# confirm its serving our bootloader.
+curl -s http://192.168.8.11:8080/wimboot | sha256sum
+sha256sum ipxe/artifacts-amd64/amd64/wimboot
 ```

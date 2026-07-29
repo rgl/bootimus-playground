@@ -4,7 +4,7 @@ My [Bootimus](https://github.com/garybowers/bootimus) playground.
 
 ## Usage (Ubuntu)
 
-Install ubuntu, docker, libvirt, and qemu.
+Install docker, libvirt, qemu, and terraform.
 
 Verify that no other service is using the required ports:
 
@@ -89,9 +89,22 @@ Show the Bootimus generated boot menu:
 curl http://localhost:8080/menu.ipxe
 ```
 
+Execute WireShark with one of the following capture filters:
+
+* `ether host 02:00:00:00:00:00`
+* `port 67 or port 68 or port 69 or port 8080`
+
+Start a local virtual machine that boots from bootimus:
+
+```bash
+terraform init
+terraform apply
+```
+
 And when you are ready, destroy everything:
 
 ```bash
+terraform destroy
 docker kill bootimus
 sudo rm -rf data tmp
 ```
@@ -127,4 +140,8 @@ sudo sqlite3 data/bootimus.db "select * from distro_profiles where family='windo
 # show the windows images.
 sudo sqlite3 data/bootimus.db ".schema images"
 sudo sqlite3 data/bootimus.db "select * from images where distro='windows'"
+
+# show the clients.
+sudo sqlite3 data/bootimus.db ".schema clients"
+sudo sqlite3 data/bootimus.db "select * from clients"
 ```

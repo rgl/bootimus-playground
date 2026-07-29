@@ -266,6 +266,105 @@ function image_upload {
     fi
 }
 
+function client_configure {
+    local client_image_name="$1"
+
+    case "$client_image_name" in
+        windows-pe)
+            local client_image="windows-pe-amd64.iso"
+            ;;
+        *)
+            echo "ERROR: unknown image name $client_image_name"
+            return 1
+            ;;
+    esac
+
+    local client_name="vm0"
+    local client_mac="02:00:00:00:00:00"
+
+    # delete the existing client (when it exists).
+    # TODO unfortunately we cannot yet delete the client. currently, the client
+    #      is not really deleted, its just soft-deleted, which prevents a new
+    #      one to be created, so do not ever delete it.
+    #      drop this after https://github.com/garybowers/bootimus/issues/103 is resolved.
+    curl \
+        --silent \
+        --show-error \
+        -H "Authorization: Bearer $bootimus_admin_token" \
+        -X GET \
+        http://localhost:8081/api/clients \
+        --url-query "mac=$client_mac" \
+        | jq -r --arg n "$client_mac" '.data | select(.mac_address == $n) | .mac_address' \
+        | while read client_mac; do
+            # TODO drop this after https://github.com/garybowers/bootimus/issues/103 is resolved.
+            continue
+            echo "Deleting the exiting client $client_name ($client_mac)..."
+            local result="$(curl \
+                --silent \
+                --show-error \
+                -H "Authorization: Bearer $bootimus_admin_token" \
+                -X DELETE \
+                http://localhost:8081/api/clients \
+                --url-query "mac=$client_mac")"
+            if [ "$(jq -r .success <<<"$result")" != "true" ]; then
+                echo "ERROR: failed to delete the existing client: $(jq . <<<"$result")"
+                return 1
+            fi
+        done
+
+    echo "Creating the client $client_name ($client_mac)..."
+    local result="$(curl \
+        --silent \
+        --show-error \
+        -H "Authorization: Bearer $bootimus_admin_token" \
+        -X POST \
+        http://localhost:8081/api/clients \
+        -H 'Content-Type: application/json' \
+        -d "$(jq \
+            --null-input \
+            --arg m "$client_mac" \
+            --arg n "$client_name" \
+            '{mac_address: $m, name: $n}')")"
+    if [ "$(jq -r .success <<<"$result")" != "true" ]; then
+        # TODO drop this after https://github.com/garybowers/bootimus/issues/103 is resolved.
+        if [ "$(jq -r .error <<<"$result")" != "constraint failed: UNIQUE constraint failed: clients.mac_address (2067)" ]; then
+            echo "ERROR: failed to create the client: $(jq . <<<"$result")"
+            return 1
+        fi
+    fi
+
+    echo "Setting the client $client_name ($client_mac) next boot..."
+    local result="$(curl \
+        --silent \
+        --show-error \
+        -H "Authorization: Bearer $bootimus_admin_token" \
+        -X POST \
+        http://localhost:8081/api/clients/next-boot \
+        -H 'Content-Type: application/json' \
+        -d "$(jq \
+            --null-input \
+            --arg m "$client_mac" \
+            --arg f "$client_image" \
+            '{mac_address: $m, image_filename: $f}')")"
+    if [ "$(jq -r .success <<<"$result")" != "true" ]; then
+        echo "ERROR: failed to set the client next boot: $(jq . <<<"$result")"
+        return 1
+    fi
+
+    echo "The client $client_name ($client_mac) was created as:"
+    curl \
+        --silent \
+        --show-error \
+        -H "Authorization: Bearer $bootimus_admin_token" \
+        -X GET \
+        http://localhost:8081/api/clients \
+        --url-query "mac=$client_mac" \
+        | jq -r .data
+    #sudo sqlite3 data/bootimus.db "select mac_address,next_boot_image,auto_install_file from clients where mac_address='$client_mac'"
+}
+
 bootloader_upload
 
 image_upload windows-pe
+
+client_configure windows-pe

@@ -1,2 +1,5 @@
 data/
 artifacts-*/
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup

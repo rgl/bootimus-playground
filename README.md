@@ -109,4 +109,22 @@ docker exec bootimus /bootimus serve --help
 # confirm its serving our bootloader.
 curl -s http://192.168.8.11:8080/wimboot | sha256sum
 sha256sum ipxe/artifacts-amd64/amd64/wimboot
+
+# show information about the windows-pe boot.wim file.
+docker exec bootimus wiminfo /data/isos/windows-pe-amd64/iso/sources/boot.wim
+docker exec bootimus wimdir /data/isos/windows-pe-amd64/iso/sources/boot.wim | grep -i netkvm
+docker exec bootimus wimdir /data/isos/windows-pe-amd64/iso/sources/boot.wim | grep -i winpeshl.ini
+docker exec bootimus wimdir /data/isos/windows-pe-amd64/iso/sources/boot.wim | grep -i startnet.cmd
+docker exec bootimus wimextract /data/isos/windows-pe-amd64/iso/sources/boot.wim 1 /Windows/System32/winpeshl.ini --to-stdout
+docker exec bootimus wimextract /data/isos/windows-pe-amd64/iso/sources/boot.wim 1 /Windows/System32/startnet.cmd --to-stdout
+
+# show the windows distro profile.
+sudo sqlite3 data/bootimus.db ".schema distro_profiles"
+sudo sqlite3 data/bootimus.db "select * from distro_profiles where family='windows'"
+#sudo sqlite3 data/bootimus.db "select profile_id,kernel_paths,default_boot_params from distro_profiles where family='windows'"
+#sudo sqlite3 data/bootimus.db "update distro_profiles set kernel_paths='[]' where profile_id='windows'"
+
+# show the windows images.
+sudo sqlite3 data/bootimus.db ".schema images"
+sudo sqlite3 data/bootimus.db "select * from images where distro='windows'"
 ```

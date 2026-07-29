@@ -1,0 +1,3 @@
+
+initrd {{BASE_URL}}/boot/{{CACHE_DIR}}/iso/Boot/BCD bcd
+initrd {{BASE_URL}}/boot/{{CACHE_DIR}}/iso/Boot/boot.sdi boot.sdi

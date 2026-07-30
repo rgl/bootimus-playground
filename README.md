@@ -13,10 +13,11 @@ Verify that no other service is using the required ports:
 #   4011: BOOTP/DHCP/proxyDHCP server
 #     68: BOOTP/DHCP client
 #     69: TFTP server
+#   1445: SMB server
 #  10809: NBD server
 #   8080: bootimus http server
 #   8081: bootimus admin server
-sudo ss -anlp | grep -E ':(67|68|69|4011|8080|8081|10809)\s+'
+sudo ss -anlp | grep -E ':(67|68|69|1445|4011|8080|8081|10809)\s+'
 ```
 
 If the above returns any result, it means your machine already has a service
@@ -25,11 +26,17 @@ bootimus. For example, using:
 
 ```bash
 sudo virsh net-destroy default # stop the network.
+sudo systemctl stop smbd
 ```
 
 Execute the bootimus server in foreground:
 
 ```bash
+# NB the bootimus --windows-smb-port parameter is used to change the default
+#    smb port from 445 to 1445, but it can only be accessed from windows 11 24H2
+#    (or later) or windows server 2025 (or later). the port cannot be changed
+#    on earlier windows versions.
+# see https://learn.microsoft.com/en-us/windows-server/storage/file-server/smb-ports?tabs=command-line
 # see https://bootimus.com/docs/deployment
 # see https://github.com/garybowers/bootimus/releases
 # see https://github.com/garybowers/bootimus/blob/v0.1.73/Dockerfile
@@ -45,7 +52,9 @@ docker run \
     --volume ./data:/data \
     "$bootimus_image" \
         serve \
-        --proxy-dhcp
+        --proxy-dhcp \
+        --windows-smb \
+        --windows-smb-port 1445
 ```
 
 Switch to another shell.
@@ -111,6 +120,10 @@ sudo rm -rf data tmp
 
 # Troubleshoot
 
+Review the articles:
+
+* [Windows Setup: Deployment Troubleshooting and Log Files](https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/deployment-troubleshooting-and-log-files?view=windows-11).
+
 Review the commands:
 
 ```bash
@@ -123,6 +136,10 @@ docker exec bootimus /bootimus serve --help
 curl -s http://192.168.8.11:8080/wimboot | sha256sum
 sha256sum ipxe/artifacts-amd64/amd64/wimboot
 
+# verify that we can access the bootimus smb share.
+docker exec bootimus cat /data/smb/smb.conf
+smbclient --no-pass //192.168.8.11/windows-server-2025-amd64 --command 'ls sources/boot.wim'
+
 # show information about the windows-pe boot.wim file.
 docker exec bootimus wiminfo /data/isos/windows-pe-amd64/iso/sources/boot.wim
 docker exec bootimus wimdir /data/isos/windows-pe-amd64/iso/sources/boot.wim | grep -i netkvm
@@ -133,6 +150,7 @@ docker exec bootimus wimextract /data/isos/windows-pe-amd64/iso/sources/boot.wim
 
 # show information about the windows-server-2025 boot.wim file.
 docker exec bootimus wiminfo /data/isos/windows-server-2025-amd64/iso/sources/boot.wim
+docker exec bootimus wimdir /data/isos/windows-server-2025-amd64/iso/sources/boot.wim 2 | grep -i netkvm
 docker exec bootimus wimdir /data/isos/windows-server-2025-amd64/iso/sources/boot.wim 2 | grep -i winpeshl.ini
 docker exec bootimus wimdir /data/isos/windows-server-2025-amd64/iso/sources/boot.wim 2 | grep -i startnet.cmd
 docker exec bootimus wimextract /data/isos/windows-server-2025-amd64/iso/sources/boot.wim 2 /Windows/System32/winpeshl.ini --to-stdout

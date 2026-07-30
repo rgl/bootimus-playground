@@ -88,6 +88,116 @@ function bootloader_upload {
     fi
 }
 
+function qemu_drivers_download {
+    # see https://docs.fedoraproject.org/en-US/quick-docs/creating-windows-virtual-machines-using-virtio-drivers/index.html
+    # see https://github.com/virtio-win/virtio-win-guest-tools-installer
+    # see https://github.com/virtio-win/virtio-win-pkg-scripts
+    local u='https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.285-1/virtio-win-0.1.285.iso'
+    local f="$(basename "$u")"
+    if [ ! -f "qemu-drivers/$f" ]; then
+        rm -rf qemu-drivers qemu-drivers.tmp
+        mkdir qemu-drivers.tmp
+        wget --progress=dot:giga -P qemu-drivers.tmp "$u"
+        7z x -oqemu-drivers.tmp qemu-drivers.tmp/virtio-win-*.iso
+        pushd qemu-drivers.tmp
+            mkdir qemu-drivers-windows-server-2025-amd64
+            pushd qemu-drivers-windows-server-2025-amd64
+                for d in NetKVM vioscsi vioserial viostor; do
+                    rsync \
+                        -av \
+                        --mkpath \
+                        "../$d/2k25/amd64/" \
+                        "$d/"
+                done
+                find . -type f \( -name '*.md' -o -name '*.pdb' \) -delete
+                zip -9 -r ../qemu-drivers-windows-server-2025-amd64.zip *
+            popd
+        popd
+        mv qemu-drivers.tmp qemu-drivers
+    fi
+}
+
+# NB at the winpe command prompt, you can manually load drivers using, e.g.:
+#       cd x:\drivers
+#       drvload netkvm.inf
+#       ipconfig /all
+#       drvload vioscsi.inf
+#       wmic diskdrive list brief
+function qemu_drivers_upload {
+    local image_name="$1-amd64"
+    local image_file="$image_name.iso"
+    local drivers_file="qemu-drivers-$image_name.zip"
+
+    qemu_drivers_download
+
+    local result="$(curl \
+        --silent \
+        --show-error \
+        -H "Authorization: Bearer $bootimus_admin_token" \
+        -X GET \
+        http://localhost:8081/api/images \
+        --url-query "filename=$image_file")"
+    if [ "$(jq -r .success <<<"$result")" != "true" ]; then
+        echo "ERROR: failed to get image: $(jq . <<<"$result")"
+        return 1
+    fi
+    local image_id="$(jq -r .data.id <<<"$result")"
+
+    # delete the existing drivers (when they exists).
+    curl \
+        --silent \
+        --show-error \
+        -H "Authorization: Bearer $bootimus_admin_token" \
+        -X GET \
+        http://localhost:8081/api/drivers \
+        --url-query "imageId=$image_id" \
+        | jq -r --arg f "$drivers_file" '.data[] | select(.filename == $f) | .id' \
+        | while read id; do
+            echo "Deleting the exiting drivers $id..."
+            local result="$(curl \
+                --silent \
+                --show-error \
+                -H "Authorization: Bearer $bootimus_admin_token" \
+                -X DELETE \
+                http://localhost:8081/api/drivers/delete \
+                --url-query "id=$id")"
+            if [ "$(jq -r .success <<<"$result")" != "true" ]; then
+                echo "ERROR: failed to delete drivers: $(jq . <<<"$result")"
+                return 1
+            fi
+        done
+
+    echo "Uploading the qemu drivers from qemu-drivers/$drivers_file to the $image_name ($image_id)..."
+    local result="$(curl \
+        --silent \
+        --show-error\
+        -H "Authorization: Bearer $bootimus_admin_token" \
+        -X POST \
+        http://localhost:8081/api/drivers/upload  \
+        -F "imageId=$image_id" \
+        -F "file=@qemu-drivers/$drivers_file" \
+        -F "description=QEMU Drivers")"
+    if [ "$(jq -r .success <<<"$result")" != "true" ]; then
+        echo "ERROR: failed to upload drivers file: $(jq . <<<"$result")"
+        return 1
+    fi
+
+    echo "Rebuilding the $image_name ($image_id) image in background..."
+    local result="$(curl \
+        --silent \
+        --show-error\
+        -H "Authorization: Bearer $bootimus_admin_token" \
+        -X POST \
+        http://localhost:8081/api/drivers/rebuild  \
+        --url-query "imageId=$image_id")"
+    if [ "$(jq -r .success <<<"$result")" != "true" ]; then
+        echo "ERROR: failed to rebuild image: $(jq . <<<"$result")"
+        return 1
+    fi
+
+    # TODO how to get api/drivers/rebuild result?
+}
+
 function image_upload {
     local image_name="$1"
 
@@ -378,5 +488,7 @@ bootloader_upload
 
 image_upload windows-pe
 image_upload windows-server-2025
+
+qemu_drivers_upload windows-server-2025
 
 client_configure windows-server-2025

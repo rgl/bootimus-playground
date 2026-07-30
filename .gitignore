@@ -1,5 +1,7 @@
 data/
+qemu-drivers/
 artifacts-*/
 .terraform/
 terraform.tfstate
 terraform.tfstate.backup
+*.tmp

@@ -99,6 +99,14 @@ function image_upload {
             local image_description="Windows PE"
             local image_boot_params="boot-params-windows-pe.txt"
             ;;
+        windows-server-2025)
+            local image_distro="windows"
+            # see https://github.com/rgl/windows-evaluation-isos-scraper/tree/main/data
+            local image_url="https://software-static.download.prss.microsoft.com/dbazure/998969d5-f34g-4e03-ac9d-1f9786c66749/26100.32230.260111-0550.lt_release_svc_refresh_SERVER_EVAL_x64FRE_en-us.iso"
+            local image_file="windows-server-2025-amd64.iso"
+            local image_description="Windows Server 2025"
+            local image_boot_params="/dev/null"
+            ;;
         *)
             echo "ERROR: unknown image name $image_name"
             ;;
@@ -273,6 +281,9 @@ function client_configure {
         windows-pe)
             local client_image="windows-pe-amd64.iso"
             ;;
+        windows-server-2025)
+            local client_image="windows-server-2025-amd64.iso"
+            ;;
         *)
             echo "ERROR: unknown image name $client_image_name"
             return 1
@@ -366,5 +377,6 @@ function client_configure {
 bootloader_upload
 
 image_upload windows-pe
+image_upload windows-server-2025
 
-client_configure windows-pe
+client_configure windows-server-2025

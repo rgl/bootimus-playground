@@ -218,6 +218,14 @@ function image_upload {
             local image_description="Ubuntu Server 26.04 (Resolute Raccoon)"
             local image_boot_params=""
             ;;
+        fedora-server-44)
+            # see https://fedoraproject.org/server/
+            local image_distro="fedora"
+            local image_url="https://download.fedoraproject.org/pub/fedora/linux/releases/44/Server/x86_64/iso/Fedora-Server-netinst-x86_64-44-1.7.iso"
+            local image_file="fedora-server-44-amd64.iso"
+            local image_description="Fedora Server 44"
+            local image_boot_params="boot-params-fedora-server-44.txt"
+            ;;
         windows-pe)
             local image_distro="windows"
             local image_url="https://github.com/rgl/windows-pe-vagrant/releases/download/v20260727/windows-pe-20260727-amd64.iso"
@@ -427,6 +435,9 @@ function client_configure {
         ubuntu-server-26-04)
             local client_image="ubuntu-server-26-04-amd64.iso"
             ;;
+        fedora-server-44)
+            local client_image="fedora-server-44-amd64.iso"
+            ;;
         windows-pe)
             local client_image="windows-pe-amd64.iso"
             ;;
@@ -518,6 +529,7 @@ bootloader_upload
 
 image_upload debian-13
 image_upload ubuntu-server-26-04
+image_upload fedora-server-44
 image_upload windows-pe
 image_upload windows-server-2025
 

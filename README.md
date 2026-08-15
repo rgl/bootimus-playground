@@ -39,9 +39,9 @@ Execute the bootimus server in foreground:
 # see https://learn.microsoft.com/en-us/windows-server/storage/file-server/smb-ports?tabs=command-line
 # see https://bootimus.com/docs/deployment
 # see https://github.com/garybowers/bootimus/releases
-# see https://github.com/garybowers/bootimus/blob/v0.1.73/Dockerfile
+# see https://github.com/garybowers/bootimus/blob/v0.1.74/Dockerfile
 # see https://hub.docker.com/r/garybowers/bootimus/tags
-bootimus_image="garybowers/bootimus:0.1.73"
+bootimus_image="garybowers/bootimus:0.1.74"
 install -d data
 docker run --rm "$bootimus_image" serve --help # show the help.
 docker run \

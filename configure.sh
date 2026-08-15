@@ -202,6 +202,14 @@ function image_upload {
     local image_name="$1"
 
     case "$image_name" in
+        debian-13)
+            # see https://www.debian.org
+            local image_distro="debian"
+            local image_url="https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-13.6.0-amd64-netinst.iso"
+            local image_file="debian-13-amd64.iso"
+            local image_description="Debian 13 (Trixie)"
+            local image_boot_params=""
+            ;;
         windows-pe)
             local image_distro="windows"
             local image_url="https://github.com/rgl/windows-pe-vagrant/releases/download/v20260727/windows-pe-20260727-amd64.iso"
@@ -362,6 +370,23 @@ function image_upload {
         esac
     done
 
+    echo "Downloading the $image_file ($image_description) image netboot..."
+    local result="$(curl \
+        --silent \
+        --show-error \
+        -H "Authorization: Bearer $bootimus_admin_token" \
+        -X POST \
+        "$bootimus_api_url/images/netboot/download" \
+        --url-query "filename=$image_file" \
+        -H 'Content-Type: application/json' \
+        -d "{}")"
+    if [ "$(jq -r .success <<<"$result")" != "true" ]; then
+        if [ "$(jq -r .error <<<"$result")" != "Netboot download not required for this image" ]; then
+            echo "ERROR: failed to download the image netboot: $(jq . <<<"$result")"
+            return 1
+        fi
+    fi
+
     # set the boot params.
     if [ -r "$image_boot_params" ]; then
         echo "Setting the $image_file ($image_description) image boot params..."
@@ -388,6 +413,9 @@ function client_configure {
     local client_image_name="$1"
 
     case "$client_image_name" in
+        debian-13)
+            local client_image="debian-13-amd64-netinst.iso"
+            ;;
         windows-pe)
             local client_image="windows-pe-amd64.iso"
             ;;
@@ -477,6 +505,7 @@ function client_configure {
 
 bootloader_upload
 
+image_upload debian-13
 image_upload windows-pe
 image_upload windows-server-2025
 

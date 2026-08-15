@@ -214,6 +214,14 @@ function image_upload {
     local image_name="$1"
 
     case "$image_name" in
+        debian-live)
+            # see https://github.com/rgl/debian-live-builder-vagrant
+            local image_distro="debian"
+            local image_url="https://github.com/rgl/debian-live-builder-vagrant/releases/download/v20260702/debian-live-20260702-amd64.iso"
+            local image_file="debian-live-amd64.iso"
+            local image_description="Debian Live"
+            local image_boot_params="boot-params-debian-live.txt"
+            ;;
         debian-13)
             # see https://www.debian.org
             local image_distro="debian"
@@ -461,6 +469,9 @@ function client_configure {
     local client_image_name="$1"
 
     case "$client_image_name" in
+        debian-live)
+            local client_image="debian-live-amd64.iso"
+            ;;
         debian-13)
             local client_image="debian-13-amd64-netinst.iso"
             ;;
@@ -565,6 +576,7 @@ function client_configure {
 
 bootloader_upload
 
+image_upload debian-live
 image_upload debian-13
 image_upload ubuntu-server-26-04
 image_upload fedora-server-44
@@ -573,4 +585,4 @@ image_upload windows-pe
 image_upload windows-server-2025 && qemu_drivers_upload windows-server-2025
 image_upload windows-11 && qemu_drivers_upload windows-11
 
-client_configure windows-11
+client_configure debian-live

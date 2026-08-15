@@ -1,0 +1,1 @@
+initrd=initrd hostname=debian-live domain=test net.ifnames=0 boot=live fetch={{BASE_URL}}/boot/{{CACHE_DIR}}/iso/live/filesystem.squashfs components username=vagrant

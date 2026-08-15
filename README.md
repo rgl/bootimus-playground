@@ -13,16 +13,17 @@ Verify that no other service is using the required ports:
 #   4011: BOOTP/DHCP/proxyDHCP server
 #     68: BOOTP/DHCP client
 #     69: TFTP server
-#   1445: SMB server
+#    445: SMB server
 #  10809: NBD server
 #   8080: bootimus http server
 #   8081: bootimus admin server
-sudo ss -anlp | grep -E ':(67|68|69|1445|4011|8080|8081|10809)\s+'
+sudo ss -anlp | grep -E ':(67|68|69|445|4011|8080|8081|10809)\s+'
 ```
 
-If the above returns any result, it means your machine already has a service
-running that uses any of those ports and you need to stop them before starting
-bootimus. For example, using:
+If the above returns any result, it means your machine already has running
+service that uses any of those ports and you need to, either bind to a specific
+network interface, or you need to stop them before starting bootimus. For
+example, by using:
 
 ```bash
 sudo virsh net-destroy default # stop the network.
@@ -32,16 +33,21 @@ sudo systemctl stop smbd
 Execute the bootimus server in foreground:
 
 ```bash
-# NB the bootimus --windows-smb-port parameter is used to change the default
-#    smb port from 445 to 1445, but it can only be accessed from windows 11 24H2
-#    (or later) or windows server 2025 (or later). the port cannot be changed
-#    on earlier windows versions.
+# NB the bootimus --windows-smb-port parameter can be used to change the default
+#    smb port from 445 to something else, but it can only be accessed from
+#    windows 11 24H2 (or later) or windows server 2025 (or later). the port
+#    cannot be changed on earlier windows versions.
 # see https://learn.microsoft.com/en-us/windows-server/storage/file-server/smb-ports?tabs=command-line
 # see https://bootimus.com/docs/deployment
 # see https://github.com/garybowers/bootimus/releases
 # see https://github.com/garybowers/bootimus/blob/v0.1.74/Dockerfile
 # see https://hub.docker.com/r/garybowers/bootimus/tags
 bootimus_image="garybowers/bootimus:0.1.74"
+bootimus_bind_interface=""
+bootimus_host="localhost"
+bootimus_url="http://${bootimus_host}:8081"
+bootimus_api_url="${bootimus_url}/api"
+bootimus_boot_url="http://${bootimus_host}:8080"
 install -d data
 docker run --rm "$bootimus_image" serve --help # show the help.
 docker run \
@@ -52,9 +58,9 @@ docker run \
     --volume ./data:/data \
     "$bootimus_image" \
         serve \
+        --bind-interface "$bootimus_bind_interface" \
         --proxy-dhcp \
-        --windows-smb \
-        --windows-smb-port 1445
+        --windows-smb
 ```
 
 Switch to another shell.
@@ -69,7 +75,7 @@ docker exec bootimus /bootimus user set-password admin --password "$bootimus_adm
 Access the Bootimus Admin Panel and login as the `admin` user:
 
 ```bash
-xdg-open http://localhost:8081
+xdg-open "$bootimus_url"
 ```
 
 Configure Bootimus:
@@ -79,7 +85,7 @@ bootimus_admin_token="$(curl \
     --silent \
     --show-error \
     -X POST \
-    http://localhost:8081/api/login \
+    "$bootimus_api_url/login" \
     -H 'Content-Type: application/json' \
     -d "$(jq \
         --null-input \
@@ -88,6 +94,7 @@ bootimus_admin_token="$(curl \
         '{username: $u, password: $p}')" \
     | jq -r .data.token)"
 
+bootimus_api_url="$bootimus_api_url" \
 bootimus_admin_token="$bootimus_admin_token" \
     ./configure.sh
 ```
@@ -95,7 +102,7 @@ bootimus_admin_token="$bootimus_admin_token" \
 Show the Bootimus generated boot menu:
 
 ```bash
-curl http://localhost:8080/menu.ipxe
+curl "$bootimus_boot_url/menu.ipxe"
 ```
 
 Execute WireShark with one of the following capture filters:

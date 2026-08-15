@@ -18,7 +18,7 @@ function bootloader_upload {
         --show-error \
         -H "Authorization: Bearer $bootimus_admin_token" \
         -X GET \
-        http://localhost:8081/api/bootloaders \
+        "$bootimus_api_url/bootloaders" \
         | jq -r --arg n "$bootloader_name" '.data.sets[] | select(.name == $n) | .name' \
         | while read name; do
             echo "Deleting the existing $name bootloader..."
@@ -27,7 +27,7 @@ function bootloader_upload {
                 --show-error \
                 -H "Authorization: Bearer $bootimus_admin_token" \
                 -X DELETE \
-                http://localhost:8081/api/bootloaders/delete \
+                "$bootimus_api_url/bootloaders/delete" \
                 --url-query "set=$name")"
             if [ "$(jq -r .success <<<"$result")" != "true" ]; then
                 echo "ERROR: failed to delete bootloader: $(jq . <<<"$result")"
@@ -41,7 +41,7 @@ function bootloader_upload {
         --silent \
         --show-error \
         -X POST \
-        http://localhost:8081/api/bootloaders/create \
+        "$bootimus_api_url/bootloaders/create" \
         -H "Authorization: Bearer $bootimus_admin_token" \
         -H 'Content-Type: application/json' \
         -d "$(jq \
@@ -60,7 +60,7 @@ function bootloader_upload {
             --show-error\
             -H "Authorization: Bearer $bootimus_admin_token" \
             -X POST \
-            http://localhost:8081/api/bootloaders/upload  \
+            "$bootimus_api_url/bootloaders/upload"  \
             -F "set=$bootloader_name" \
             -F "file=@$bootloader_file")"
         if [ "$(jq -r .success <<<"$result")" != "true" ]; then
@@ -76,7 +76,7 @@ function bootloader_upload {
         --show-error \
         -H "Authorization: Bearer $bootimus_admin_token" \
         -X POST \
-        http://localhost:8081/api/bootloaders/select \
+        "$bootimus_api_url/bootloaders/select" \
         -H 'Content-Type: application/json' \
         -d "$(jq \
             --null-input \
@@ -135,7 +135,7 @@ function qemu_drivers_upload {
         --show-error \
         -H "Authorization: Bearer $bootimus_admin_token" \
         -X GET \
-        http://localhost:8081/api/images \
+        "$bootimus_api_url/images" \
         --url-query "filename=$image_file")"
     if [ "$(jq -r .success <<<"$result")" != "true" ]; then
         echo "ERROR: failed to get image: $(jq . <<<"$result")"
@@ -149,7 +149,7 @@ function qemu_drivers_upload {
         --show-error \
         -H "Authorization: Bearer $bootimus_admin_token" \
         -X GET \
-        http://localhost:8081/api/drivers \
+        "$bootimus_api_url/drivers" \
         --url-query "imageId=$image_id" \
         | jq -r --arg f "$drivers_file" '.data[] | select(.filename == $f) | .id' \
         | while read id; do
@@ -159,7 +159,7 @@ function qemu_drivers_upload {
                 --show-error \
                 -H "Authorization: Bearer $bootimus_admin_token" \
                 -X DELETE \
-                http://localhost:8081/api/drivers/delete \
+                "$bootimus_api_url/drivers/delete" \
                 --url-query "id=$id")"
             if [ "$(jq -r .success <<<"$result")" != "true" ]; then
                 echo "ERROR: failed to delete drivers: $(jq . <<<"$result")"
@@ -173,7 +173,7 @@ function qemu_drivers_upload {
         --show-error\
         -H "Authorization: Bearer $bootimus_admin_token" \
         -X POST \
-        http://localhost:8081/api/drivers/upload  \
+        "$bootimus_api_url/drivers/upload"  \
         -F "imageId=$image_id" \
         -F "file=@qemu-drivers/$drivers_file" \
         -F "description=QEMU Drivers")"
@@ -188,7 +188,7 @@ function qemu_drivers_upload {
         --show-error\
         -H "Authorization: Bearer $bootimus_admin_token" \
         -X POST \
-        http://localhost:8081/api/drivers/rebuild  \
+        "$bootimus_api_url/drivers/rebuild"  \
         --url-query "imageId=$image_id")"
     if [ "$(jq -r .success <<<"$result")" != "true" ]; then
         echo "ERROR: failed to rebuild image: $(jq . <<<"$result")"
@@ -228,7 +228,7 @@ function image_upload {
         --show-error \
         -H "Authorization: Bearer $bootimus_admin_token" \
         -X GET \
-        http://localhost:8081/api/images \
+        "$bootimus_api_url/images" \
         --url-query "filename=$image_file" \
         | jq -r --arg f "$image_file" '.data | select(.filename == $f) | .filename' \
         | while read f; do
@@ -238,7 +238,7 @@ function image_upload {
                 --show-error \
                 -H "Authorization: Bearer $bootimus_admin_token" \
                 -X DELETE \
-                http://localhost:8081/api/images \
+                "$bootimus_api_url/images" \
                 --url-query "filename=$f" \
                 --url-query "delete_file=true")"
             if [ "$(jq -r .success <<<"$result")" != "true" ]; then
@@ -253,7 +253,7 @@ function image_upload {
         --show-error \
         -H "Authorization: Bearer $bootimus_admin_token" \
         -X POST \
-        http://localhost:8081/api/images/download \
+        "$bootimus_api_url/images/download" \
         -H 'Content-Type: application/json' \
         -d "$(jq \
             --null-input \
@@ -274,7 +274,7 @@ function image_upload {
                 --show-error \
                 -H "Authorization: Bearer $bootimus_admin_token" \
                 -X GET \
-                http://localhost:8081/api/downloads/progress \
+                "$bootimus_api_url/downloads/progress" \
                 --url-query "filename=$image_file"
         )"
         local image_status="$(jq -r .data.status <<<"$image_progress")"
@@ -305,7 +305,7 @@ function image_upload {
         --show-error \
         -H "Authorization: Bearer $bootimus_admin_token" \
         -X GET \
-        http://localhost:8081/api/images \
+        "$bootimus_api_url/images" \
         --url-query "filename=$image_file")"
     if [ "$(jq -r .success <<<"$result")" != "true" ]; then
         echo "ERROR: failed to get image: $(jq . <<<"$result")"
@@ -319,7 +319,7 @@ function image_upload {
         --show-error \
         -H "Authorization: Bearer $bootimus_admin_token" \
         -X POST \
-        http://localhost:8081/api/images/extract \
+        "$bootimus_api_url/images/extract" \
         --url-query "filename=$image_file" \
         -H 'Content-Type: application/json' \
         -d "{}")"
@@ -337,7 +337,7 @@ function image_upload {
                 --show-error \
                 -H "Authorization: Bearer $bootimus_admin_token" \
                 -X GET \
-                http://localhost:8081/api/images/extract-progress \
+                "$bootimus_api_url/images/extract-progress" \
                 --url-query "filename=$image_file"
         )"
         local image_status="$(jq -r .data.status <<<"$image_progress")"
@@ -370,7 +370,7 @@ function image_upload {
             --show-error \
             -H "Authorization: Bearer $bootimus_admin_token" \
             -X PUT \
-            http://localhost:8081/api/images \
+            "$bootimus_api_url/images" \
             --url-query "filename=$image_file" \
             -H "Content-Type: application/json" \
             -d "$(jq \
@@ -409,7 +409,7 @@ function client_configure {
         --show-error \
         -H "Authorization: Bearer $bootimus_admin_token" \
         -X GET \
-        http://localhost:8081/api/clients \
+        "$bootimus_api_url/clients" \
         --url-query "mac=$client_mac" \
         | jq -r --arg n "$client_mac" '.data | select(.mac_address == $n) | .mac_address' \
         | while read client_mac; do
@@ -419,7 +419,7 @@ function client_configure {
                 --show-error \
                 -H "Authorization: Bearer $bootimus_admin_token" \
                 -X DELETE \
-                http://localhost:8081/api/clients \
+                "$bootimus_api_url/clients" \
                 --url-query "mac=$client_mac")"
             if [ "$(jq -r .success <<<"$result")" != "true" ]; then
                 echo "ERROR: failed to delete the existing client: $(jq . <<<"$result")"
@@ -433,7 +433,7 @@ function client_configure {
         --show-error \
         -H "Authorization: Bearer $bootimus_admin_token" \
         -X POST \
-        http://localhost:8081/api/clients \
+        "$bootimus_api_url/clients" \
         -H 'Content-Type: application/json' \
         -d "$(jq \
             --null-input \
@@ -451,7 +451,7 @@ function client_configure {
         --show-error \
         -H "Authorization: Bearer $bootimus_admin_token" \
         -X POST \
-        http://localhost:8081/api/clients/next-boot \
+        "$bootimus_api_url/clients/next-boot" \
         -H 'Content-Type: application/json' \
         -d "$(jq \
             --null-input \
@@ -469,7 +469,7 @@ function client_configure {
         --show-error \
         -H "Authorization: Bearer $bootimus_admin_token" \
         -X GET \
-        http://localhost:8081/api/clients \
+        "$bootimus_api_url/clients" \
         --url-query "mac=$client_mac" \
         | jq -r .data
     #sudo sqlite3 data/bootimus.db "select mac_address,next_boot_image,auto_install_file from clients where mac_address='$client_mac'"

@@ -169,6 +169,14 @@ docker exec bootimus wimdir /data/isos/windows-server-2025-amd64/iso/sources/boo
 diff -u windows-server-2025-amd64-1.txt windows-server-2025-amd64-2.txt
 rm windows-server-2025-amd64-1.txt windows-server-2025-amd64-2.txt
 
+# show information about the windows-11 boot.wim file.
+docker exec bootimus wiminfo /data/isos/windows-11-amd64/iso/sources/boot.wim
+docker exec bootimus wimdir /data/isos/windows-11-amd64/iso/sources/boot.wim 2 | grep -i netkvm
+docker exec bootimus wimdir /data/isos/windows-11-amd64/iso/sources/boot.wim 2 | grep -i winpeshl.ini
+docker exec bootimus wimdir /data/isos/windows-11-amd64/iso/sources/boot.wim 2 | grep -i startnet.cmd
+docker exec bootimus wimextract /data/isos/windows-11-amd64/iso/sources/boot.wim 2 /Windows/System32/winpeshl.ini --to-stdout
+docker exec bootimus wimextract /data/isos/windows-11-amd64/iso/sources/boot.wim 2 /Windows/System32/startnet.cmd --to-stdout
+
 # show the windows distro profile.
 sudo sqlite3 data/bootimus.db ".schema distro_profiles"
 sudo sqlite3 data/bootimus.db "select * from distro_profiles where family='windows'"
@@ -179,7 +187,9 @@ sudo sqlite3 data/bootimus.db "select * from distro_profiles where family='windo
 sudo sqlite3 data/bootimus.db ".schema images"
 sudo sqlite3 data/bootimus.db "select * from images where distro='windows'"
 #sudo sqlite3 data/bootimus.db "select name,boot_params from images where name='windows-server-2025-amd64'"
+#sudo sqlite3 data/bootimus.db "select name,boot_params from images where name='windows-11-amd64'"
 #sudo sqlite3 data/bootimus.db "update images set boot_params='' where name='windows-server-2025-amd64'"
+#sudo sqlite3 data/bootimus.db "update images set boot_params='' where name='windows-11-amd64'"
 
 # show the clients.
 sudo sqlite3 data/bootimus.db ".schema clients"

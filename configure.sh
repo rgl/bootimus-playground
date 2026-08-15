@@ -112,6 +112,18 @@ function qemu_drivers_download {
                 find . -type f \( -name '*.md' -o -name '*.pdb' \) -delete
                 zip -9 -r ../qemu-drivers-windows-server-2025-amd64.zip *
             popd
+            mkdir qemu-drivers-windows-11-amd64
+            pushd qemu-drivers-windows-11-amd64
+                for d in NetKVM vioscsi vioserial viostor; do
+                    rsync \
+                        -av \
+                        --mkpath \
+                        "../$d/w11/amd64/" \
+                        "$d/"
+                done
+                find . -type f \( -name '*.md' -o -name '*.pdb' \) -delete
+                zip -9 -r ../qemu-drivers-windows-11-amd64.zip *
+            popd
         popd
         mv qemu-drivers.tmp qemu-drivers
     fi
@@ -247,6 +259,15 @@ function image_upload {
             local image_url="https://software-static.download.prss.microsoft.com/dbazure/998969d5-f34g-4e03-ac9d-1f9786c66749/26100.32230.260111-0550.lt_release_svc_refresh_SERVER_EVAL_x64FRE_en-us.iso"
             local image_file="windows-server-2025-amd64.iso"
             local image_description="Windows Server 2025"
+            local image_boot_params="/dev/null"
+            ;;
+        windows-11)
+            # see https://learn.microsoft.com/en-us/windows/whats-new/ltsc/overview
+            # see https://github.com/rgl/windows-evaluation-isos-scraper/tree/main/data
+            local image_distro="windows"
+            local image_url="https://software-static.download.prss.microsoft.com/dbazure/888969d5-f34g-4e03-ac9d-1f9786c66749/26100.1742.240906-0331.ge_release_svc_refresh_CLIENT_LTSC_EVAL_x64FRE_en-us.iso"
+            local image_file="windows-11-amd64.iso"
+            local image_description="Windows 11"
             local image_boot_params="/dev/null"
             ;;
         *)
@@ -455,6 +476,9 @@ function client_configure {
         windows-server-2025)
             local client_image="windows-server-2025-amd64.iso"
             ;;
+        windows-11)
+            local client_image="windows-11-amd64.iso"
+            ;;
         *)
             echo "ERROR: unknown image name $client_image_name"
             return 1
@@ -543,8 +567,7 @@ image_upload ubuntu-server-26-04
 image_upload fedora-server-44
 image_upload almalinux-10
 image_upload windows-pe
-image_upload windows-server-2025
+image_upload windows-server-2025 && qemu_drivers_upload windows-server-2025
+image_upload windows-11 && qemu_drivers_upload windows-11
 
-qemu_drivers_upload windows-server-2025
-
-client_configure windows-server-2025
+client_configure windows-11

@@ -404,10 +404,6 @@ function client_configure {
     local client_mac="02:00:00:00:00:00"
 
     # delete the existing client (when it exists).
-    # TODO unfortunately we cannot yet delete the client. currently, the client
-    #      is not really deleted, its just soft-deleted, which prevents a new
-    #      one to be created, so do not ever delete it.
-    #      drop this after https://github.com/garybowers/bootimus/issues/103 is resolved.
     curl \
         --silent \
         --show-error \
@@ -417,8 +413,6 @@ function client_configure {
         --url-query "mac=$client_mac" \
         | jq -r --arg n "$client_mac" '.data | select(.mac_address == $n) | .mac_address' \
         | while read client_mac; do
-            # TODO drop this after https://github.com/garybowers/bootimus/issues/103 is resolved.
-            continue
             echo "Deleting the exiting client $client_name ($client_mac)..."
             local result="$(curl \
                 --silent \
@@ -447,11 +441,8 @@ function client_configure {
             --arg n "$client_name" \
             '{mac_address: $m, name: $n}')")"
     if [ "$(jq -r .success <<<"$result")" != "true" ]; then
-        # TODO drop this after https://github.com/garybowers/bootimus/issues/103 is resolved.
-        if [ "$(jq -r .error <<<"$result")" != "constraint failed: UNIQUE constraint failed: clients.mac_address (2067)" ]; then
-            echo "ERROR: failed to create the client: $(jq . <<<"$result")"
-            return 1
-        fi
+        echo "ERROR: failed to create the client: $(jq . <<<"$result")"
+        return 1
     fi
 
     echo "Setting the client $client_name ($client_mac) next boot..."

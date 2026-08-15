@@ -210,6 +210,14 @@ function image_upload {
             local image_description="Debian 13 (Trixie)"
             local image_boot_params=""
             ;;
+        ubuntu-server-26-04)
+            # see https://ubuntu.com/server
+            local image_distro="ubuntu"
+            local image_url="https://releases.ubuntu.com/26.04/ubuntu-26.04-live-server-amd64.iso"
+            local image_file="ubuntu-server-26-04-amd64.iso"
+            local image_description="Ubuntu Server 26.04 (Resolute Raccoon)"
+            local image_boot_params=""
+            ;;
         windows-pe)
             local image_distro="windows"
             local image_url="https://github.com/rgl/windows-pe-vagrant/releases/download/v20260727/windows-pe-20260727-amd64.iso"
@@ -416,6 +424,9 @@ function client_configure {
         debian-13)
             local client_image="debian-13-amd64-netinst.iso"
             ;;
+        ubuntu-server-26-04)
+            local client_image="ubuntu-server-26-04-amd64.iso"
+            ;;
         windows-pe)
             local client_image="windows-pe-amd64.iso"
             ;;
@@ -506,6 +517,7 @@ function client_configure {
 bootloader_upload
 
 image_upload debian-13
+image_upload ubuntu-server-26-04
 image_upload windows-pe
 image_upload windows-server-2025
 

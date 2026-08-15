@@ -247,6 +247,8 @@ function image_upload {
             local image_boot_params="boot-params-almalinux-10.txt"
             ;;
         windows-pe)
+            # see https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/winpe-intro
+            # see https://github.com/rgl/windows-pe-vagrant
             local image_distro="windows"
             local image_url="https://github.com/rgl/windows-pe-vagrant/releases/download/v20260727/windows-pe-20260727-amd64.iso"
             local image_file="windows-pe-amd64.iso"
@@ -254,8 +256,9 @@ function image_upload {
             local image_boot_params="boot-params-windows-pe.txt"
             ;;
         windows-server-2025)
-            local image_distro="windows"
+            # see https://learn.microsoft.com/en-us/windows-server/
             # see https://github.com/rgl/windows-evaluation-isos-scraper/tree/main/data
+            local image_distro="windows"
             local image_url="https://software-static.download.prss.microsoft.com/dbazure/998969d5-f34g-4e03-ac9d-1f9786c66749/26100.32230.260111-0550.lt_release_svc_refresh_SERVER_EVAL_x64FRE_en-us.iso"
             local image_file="windows-server-2025-amd64.iso"
             local image_description="Windows Server 2025"

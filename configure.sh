@@ -226,6 +226,14 @@ function image_upload {
             local image_description="Fedora Server 44"
             local image_boot_params="boot-params-fedora-server-44.txt"
             ;;
+        almalinux-10)
+            # see https://almalinux.org
+            local image_distro="alma"
+            local image_url="http://mirrors.ptisp.pt/almalinux/10/BaseOS/x86_64/os/images/boot.iso"
+            local image_file="almalinux-10-amd64.iso"
+            local image_description="AlmaLinux 10"
+            local image_boot_params="boot-params-almalinux-10.txt"
+            ;;
         windows-pe)
             local image_distro="windows"
             local image_url="https://github.com/rgl/windows-pe-vagrant/releases/download/v20260727/windows-pe-20260727-amd64.iso"
@@ -438,6 +446,9 @@ function client_configure {
         fedora-server-44)
             local client_image="fedora-server-44-amd64.iso"
             ;;
+        almalinux-10)
+            local client_image="almalinux-10-amd64.iso"
+            ;;
         windows-pe)
             local client_image="windows-pe-amd64.iso"
             ;;
@@ -530,6 +541,7 @@ bootloader_upload
 image_upload debian-13
 image_upload ubuntu-server-26-04
 image_upload fedora-server-44
+image_upload almalinux-10
 image_upload windows-pe
 image_upload windows-server-2025
 

@@ -1,0 +1,1 @@
+inst.repo=https://mirrors.ptisp.pt/almalinux/10/BaseOS/x86_64/os/

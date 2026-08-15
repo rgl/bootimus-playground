@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.25
+# syntax=docker/dockerfile:1.26
 # see https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/syntax.md
 
 FROM debian:13-slim AS build

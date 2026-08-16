@@ -40,9 +40,9 @@ Execute the bootimus server in foreground:
 # see https://learn.microsoft.com/en-us/windows-server/storage/file-server/smb-ports?tabs=command-line
 # see https://bootimus.com/docs/deployment
 # see https://github.com/garybowers/bootimus/releases
-# see https://github.com/garybowers/bootimus/blob/v0.1.74/Dockerfile
+# see https://github.com/garybowers/bootimus/blob/v0.1.75/Dockerfile
 # see https://hub.docker.com/r/garybowers/bootimus/tags
-bootimus_image="garybowers/bootimus:0.1.74"
+bootimus_image="garybowers/bootimus:0.1.75"
 bootimus_bind_interface=""
 bootimus_host="localhost"
 bootimus_url="http://${bootimus_host}:8081"

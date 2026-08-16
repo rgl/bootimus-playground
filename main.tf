@@ -226,6 +226,23 @@ resource "libvirt_domain" "example" {
             volume = libvirt_volume.example_root[count.index].name
           }
         }
+        block_io = {
+          # set the discard_granularity to make windows happy.
+          # NB when using a qemu/kvm based hypervisor, ssd trim is only available when
+          #    discard_granularity is set to 8K (or higher), otherwise,
+          #    defrag.exe C: /H /L fails as: Incorrect function. (0x80070001) error.
+          #    NB when using proxmox, there is no explicit way to set discard_granularity.
+          #       it could be set using qemu_additional_args argument, but when using
+          #       non-root user token, that fails as: only root can set 'args' config, so
+          #       we do not do it.
+          #    see lsblk -o NAME,PHY-SEC,LOG-SEC,DISC-GRAN,DISC-ALN
+          #    see fsutil.exe behavior query DisableDeleteNotify
+          #    see /etc/libvirt/qemu/{vm_name}.xml (when using libvirt).
+          #    see /etc/pve/qemu-server/{vm_id}.conf (when using proxmox).
+          # see https://libvirt.org/formatdomain.html
+          # see https://github.com/virtio-win/kvm-guest-drivers-windows/issues/1574
+          discard_granularity = 8 * 1024
+        }
         target = {
           bus = "scsi"
           dev = "sda"

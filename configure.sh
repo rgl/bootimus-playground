@@ -233,7 +233,7 @@ function image_upload {
         ubuntu-server-26-04)
             # see https://ubuntu.com/server
             local image_distro="ubuntu"
-            local image_url="https://releases.ubuntu.com/26.04/ubuntu-26.04-live-server-amd64.iso"
+            local image_url="https://releases.ubuntu.com/26.04/ubuntu-26.04.1-live-server-amd64.iso"
             local image_file="ubuntu-server-26-04-amd64.iso"
             local image_description="Ubuntu Server 26.04 (Resolute Raccoon)"
             local image_boot_params=""

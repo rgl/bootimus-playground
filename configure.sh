@@ -217,7 +217,7 @@ function image_upload {
         debian-live)
             # see https://github.com/rgl/debian-live-builder-vagrant
             local image_distro="debian"
-            local image_url="https://github.com/rgl/debian-live-builder-vagrant/releases/download/v20260702/debian-live-20260702-amd64.iso"
+            local image_url="https://github.com/rgl/debian-live-builder-vagrant/releases/download/v20260912/debian-live-20260912-amd64.iso"
             local image_file="debian-live-amd64.iso"
             local image_description="Debian Live"
             local image_boot_params="boot-params-debian-live.txt"

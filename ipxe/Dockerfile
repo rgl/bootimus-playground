@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.26
+# syntax=docker/dockerfile:1.27
 # see https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/syntax.md
 
 FROM debian:13-slim AS build
@@ -21,8 +21,8 @@ git clone https://github.com/ipxe/ipxe.git .
 # NB ipxe does not do consistent releases, so we checkout a specific commit.
 # see https://github.com/ipxe/ipxe/discussions/679#discussioncomment-5214424.
 # see https://github.com/ipxe/ipxe/commit/12798ec29aa8a64d8675c4378b99f5fe28447afb 2026-03-06T15:48:55.000Z aka v2.0.0
-# see https://github.com/ipxe/ipxe/commit/e6d0a97c05d238c17eeae5116cb6e9c0fc9fdb56 2026-08-11T10:09:33.000Z
-git checkout e6d0a97c05d238c17eeae5116cb6e9c0fc9fdb56
+# see https://github.com/ipxe/ipxe/commit/ff6e52063e0b37062394fe37b9788af25175e7af 2026-09-07T14:14:39.000Z
+git checkout ff6e52063e0b37062394fe37b9788af25175e7af
 RUN_EOF
 RUN bash <<"RUN_EOF"
 set -euxo pipefail

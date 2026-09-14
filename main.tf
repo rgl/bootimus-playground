@@ -6,7 +6,7 @@ terraform {
     # see https://github.com/dmacvicar/terraform-provider-libvirt
     libvirt = {
       source  = "dmacvicar/libvirt"
-      version = "0.9.8"
+      version = "0.9.9"
     }
   }
 }
@@ -39,8 +39,8 @@ locals {
 }
 
 # this uses the vagrant debian image imported from https://github.com/rgl/debian-vagrant.
-# see https://registry.terraform.io/providers/dmacvicar/libvirt/0.9.8/docs/resources/volume
-# see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.9.8/docs/resources/volume.md
+# see https://registry.terraform.io/providers/dmacvicar/libvirt/0.9.9/docs/resources/volume
+# see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.9.9/docs/resources/volume.md
 resource "libvirt_volume" "example_root" {
   count    = var.vm_count
   pool     = "default"
@@ -53,8 +53,8 @@ resource "libvirt_volume" "example_root" {
   }
 }
 
-# see https://registry.terraform.io/providers/dmacvicar/libvirt/0.9.8/docs/resources/domain
-# see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.9.8/docs/resources/domain.md
+# see https://registry.terraform.io/providers/dmacvicar/libvirt/0.9.9/docs/resources/domain
+# see https://github.com/dmacvicar/terraform-provider-libvirt/blob/v0.9.9/docs/resources/domain.md
 resource "libvirt_domain" "example" {
   count       = var.vm_count
   name        = "${var.prefix}${count.index}"

@@ -92,7 +92,7 @@ function qemu_drivers_download {
     # see https://docs.fedoraproject.org/en-US/quick-docs/creating-windows-virtual-machines-using-virtio-drivers/index.html
     # see https://github.com/virtio-win/virtio-win-guest-tools-installer
     # see https://github.com/virtio-win/virtio-win-pkg-scripts
-    local u='https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.285-1/virtio-win-0.1.285.iso'
+    local u='https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.302-1/virtio-win-0.1.302.iso'
     local f="$(basename "$u")"
     if [ ! -f "qemu-drivers/$f" ]; then
         rm -rf qemu-drivers qemu-drivers.tmp

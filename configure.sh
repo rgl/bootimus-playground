@@ -225,7 +225,7 @@ function image_upload {
         debian-13)
             # see https://www.debian.org
             local image_distro="debian"
-            local image_url="https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-13.6.0-amd64-netinst.iso"
+            local image_url="https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-13.7.0-amd64-netinst.iso"
             local image_file="debian-13-amd64.iso"
             local image_description="Debian 13 (Trixie)"
             local image_boot_params=""

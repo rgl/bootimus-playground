@@ -126,7 +126,7 @@ resource "libvirt_domain" "example" {
         entry = [
           {
             name  = "opt/org.tianocore/IPv4PXESupport"
-            value = "y"
+            value = "n"
           },
           {
             name  = "opt/org.tianocore/IPv6PXESupport"

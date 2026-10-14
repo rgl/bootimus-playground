@@ -8,6 +8,12 @@ terraform {
       source  = "dmacvicar/libvirt"
       version = "0.9.9"
     }
+    # see https://registry.terraform.io/providers/rgl/sushy-vbmc
+    # see https://github.com/rgl/terraform-provider-sushy-vbmc
+    vbmc = {
+      source  = "rgl/sushy-vbmc"
+      version = "0.5.0"
+    }
   }
 }
 
@@ -36,6 +42,22 @@ locals {
   cpu_threads = 1
   cpu_total   = local.cpu_sockets * local.cpu_cores * local.cpu_threads
   memory_mib  = 8 * 1024
+}
+
+output "vbmc_addresses" {
+  value = vbmc_vbmc.example[*].address
+}
+
+output "vbmc_ports" {
+  value = vbmc_vbmc.example[*].port
+}
+
+# see https://registry.terraform.io/providers/rgl/sushy-vbmc/0.5.0/docs/resources/vbmc_vbmc
+# see https://github.com/rgl/terraform-provider-sushy-vbmc/blob/v0.5.0/docs/resources/vbmc_vbmc.md
+resource "vbmc_vbmc" "example" {
+  count     = var.vm_count
+  domain_id = libvirt_domain.example[count.index].uuid
+  snake_oil = true
 }
 
 # this uses the vagrant debian image imported from https://github.com/rgl/debian-vagrant.

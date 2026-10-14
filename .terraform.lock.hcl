@@ -21,3 +21,13 @@ provider "registry.terraform.io/dmacvicar/libvirt" {
     "zh:f7337de4d59dc06d578ab3393506fedfdc962b01cc24c78a3ff46b1311e5fdb7",
   ]
 }
+
+provider "registry.terraform.io/rgl/sushy-vbmc" {
+  version     = "0.5.0"
+  constraints = "0.5.0"
+  hashes = [
+    "h1:nfR0mKyZmQXynVSsgBbtXNjEhe/+aNDKym7VE+jrKkA=",
+    "zh:08d350d920891250f85e60d023f7c480135f6ac5571d733e09b1f0eb9da39c8b",
+    "zh:08d3ea6fab3b732ebc2bab38ff995bcc063575a348650917f7f3ac97114a1327",
+  ]
+}

@@ -117,6 +117,27 @@ terraform init
 terraform apply
 ```
 
+Configure the virtual machine BMC endpoint:
+
+```bash
+redfish_host="$(terraform output --json vbmc_addresses | jq -r .[0])"
+redfish_port="$(terraform output --json vbmc_ports | jq -r .[0])"
+redfish_base_url="https://$redfish_host:$redfish_port"
+redfish_system_url="$redfish_base_url$(http --verify no "$redfish_base_url/redfish/v1/Systems" | jq -r '.Members[]."@odata.id"')"
+curl -sk -u 'admin:admin' "$redfish_system_url" | jq
+bootimus_api_url="$bootimus_api_url" \
+bootimus_admin_token="$bootimus_admin_token" \
+    ./configure.sh \
+        configure-client-bmc \
+        '02:00:00:00:00:00' \
+        "$redfish_host" \
+        "$redfish_port" \
+        'admin' \
+        'admin'
+```
+
+Open the vm0 Client in Bootimus, then control its power.
+
 And when you are ready, destroy everything:
 
 ```bash

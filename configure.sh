@@ -574,15 +574,104 @@ function client_configure {
     #sudo sqlite3 data/bootimus.db "select mac_address,next_boot_image,auto_install_file from clients where mac_address='$client_mac'"
 }
 
-bootloader_upload
+function usage {
+    cat <<EOF
+Usage: $0 <command>
 
-image_upload debian-live
-image_upload debian-13
-image_upload ubuntu-server-26-04
-image_upload fedora-server-44
-image_upload almalinux-10
-image_upload windows-pe
-image_upload windows-server-2025 && qemu_drivers_upload windows-server-2025
-image_upload windows-11 && qemu_drivers_upload windows-11
+Commands:
+  configure
+    Configure Bootimus,
 
-client_configure debian-live
+  configure-client-bmc <client-mac> <bmc-host> <bmc-port> [<bmc-username> <bmc-password>]
+
+    Configure the given Bootimus Client BMC.
+
+EOF
+    exit 1
+}
+
+function configure {
+    bootloader_upload
+
+    image_upload debian-live
+    image_upload debian-13
+    image_upload ubuntu-server-26-04
+    image_upload fedora-server-44
+    image_upload almalinux-10
+    image_upload windows-pe
+    image_upload windows-server-2025 && qemu_drivers_upload windows-server-2025
+    image_upload windows-11 && qemu_drivers_upload windows-11
+
+    client_configure debian-live
+}
+
+function client_configure_bmc {
+    local client_mac="${1:-}"
+    local bmc_host="${2:-}"
+    local bmc_port="${3:-}"
+    local bmc_username="${4:-}"
+    local bmc_password="${5:-}"
+
+    if [[ -z "$client_mac" ||-z "$bmc_host" || -z "$bmc_port" ]]; then
+        echo "Usage: configure-client-bmc <client-mac> <bmc-host> <bmc-port> [<bmc-username> <bmc-password>]" >&2
+        return 1
+    fi
+
+    if ! [[ "$bmc_port" =~ ^[0-9]+$ ]] || (( bmc_port < 1 || bmc_port > 65535 )); then
+        echo "ERROR: <bmc-port> must be an integer between 1 and 65535 (got: $bmc_port)" >&2
+        return 1
+    fi
+
+    if [[ -n "$bmc_username" && -z "$bmc_password" ]] || \
+       [[ -z "$bmc_username" && -n "$bmc_password" ]]; then
+        echo "ERROR: <bmc-username> and <bmc-password> must be provided together" >&2
+        return 1
+    fi
+
+    echo "Setting the client $client_mac bmc..."
+    local result="$(curl \
+        --silent \
+        --show-error \
+        -H "Authorization: Bearer $bootimus_admin_token" \
+        -X PUT \
+        "$bootimus_api_url/clients" \
+        -H 'Content-Type: application/json' \
+        --url-query "mac=$client_mac" \
+        -d "$(jq \
+            --null-input \
+            --arg h "$bmc_host" \
+            --arg p "$bmc_port" \
+            --arg un "$bmc_username" \
+            --arg up "$bmc_password" \
+            '{
+                ipmi_host: $h,
+                ipmi_port: ($p | tonumber),
+                ipmi_username: $un,
+                ipmi_password: $up,
+                ipmi_insecure: true
+            }')")"
+    if [ "$(jq -r .success <<<"$result")" != "true" ]; then
+        echo "ERROR: failed to set the client bmc: $(jq . <<<"$result")"
+        return 1
+    fi
+
+    return 0
+}
+
+command="${1:-configure}"; shift || true
+
+case "$command" in
+    configure)
+        configure "$@"
+        ;;
+    configure-client-bmc)
+        client_configure_bmc "$@"
+        ;;
+    -h|--help|help)
+        usage
+        ;;
+    *)
+        echo "Unknown command: $command" >&2
+        usage
+        ;;
+esac

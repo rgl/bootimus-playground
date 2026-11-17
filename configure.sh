@@ -214,6 +214,14 @@ function image_upload {
     local image_name="$1"
 
     case "$image_name" in
+        hello-world-debian-uki)
+            # see https://github.com/rgl/hello-world-debian-uki
+            local image_distro="debian"
+            local image_url="https://github.com/rgl/hello-world-debian-uki/releases/download/v0.0.1/hello-world.efi"
+            local image_file="hello-world-debian-uki.efi"
+            local image_description="Hello World Debian UKI"
+            local image_boot_params=""
+            ;;
         debian-live)
             # see https://github.com/rgl/debian-live-builder-vagrant
             local image_distro="debian"
@@ -377,54 +385,58 @@ function image_upload {
     fi
     jq -r .data <<<"$result"
 
-    echo "Extracting the $image_file ($image_description) image..."
-    local result="$(curl \
-        --silent \
-        --show-error \
-        -H "Authorization: Bearer $bootimus_admin_token" \
-        -X POST \
-        "$bootimus_api_url/images/extract" \
-        --url-query "filename=$image_file" \
-        -H 'Content-Type: application/json' \
-        -d "{}")"
-    if [ "$(jq -r .success <<<"$result")" != "true" ]; then
-        echo "ERROR: failed to extract the image: $(jq . <<<"$result")"
-        return 1
-    fi
+    local boot_method="$(jq -r .data.boot_method <<<"$result")"
 
-    # NB api/images/extract blocks, so the following is somewhat moot.
-    echo "Waiting for the $image_file ($image_description) image extraction to finish..."
-    while true; do
-        local image_progress="$(
-            curl \
-                --silent \
-                --show-error \
-                -H "Authorization: Bearer $bootimus_admin_token" \
-                -X GET \
-                "$bootimus_api_url/images/extract-progress" \
-                --url-query "filename=$image_file"
-        )"
-        local image_status="$(jq -r .data.status <<<"$image_progress")"
-        case "$image_status" in
-            extracting)
-                echo -n "."
-                sleep 5
-                ;;
-            done|idle)
-                echo "extract completed!"
-                break
-                ;;
-            error)
-                echo "ERROR: $(jq -r .data.error <<<"$image_progress")"
-                return 1
-                break
-                ;;
-            *)
-                echo "ERROR: unknown extract status: $(jq <<<"$image_progress")"
-                return 1
-                break
-        esac
-    done
+    if [ "$boot_method" != "uki" ]; then
+        echo "Extracting the $image_file ($image_description) image..."
+        local result="$(curl \
+            --silent \
+            --show-error \
+            -H "Authorization: Bearer $bootimus_admin_token" \
+            -X POST \
+            "$bootimus_api_url/images/extract" \
+            --url-query "filename=$image_file" \
+            -H 'Content-Type: application/json' \
+            -d "{}")"
+        if [ "$(jq -r .success <<<"$result")" != "true" ]; then
+            echo "ERROR: failed to extract the image: $(jq . <<<"$result")"
+            return 1
+        fi
+
+        # NB api/images/extract blocks, so the following is somewhat moot.
+        echo "Waiting for the $image_file ($image_description) image extraction to finish..."
+        while true; do
+            local image_progress="$(
+                curl \
+                    --silent \
+                    --show-error \
+                    -H "Authorization: Bearer $bootimus_admin_token" \
+                    -X GET \
+                    "$bootimus_api_url/images/extract-progress" \
+                    --url-query "filename=$image_file"
+            )"
+            local image_status="$(jq -r .data.status <<<"$image_progress")"
+            case "$image_status" in
+                extracting)
+                    echo -n "."
+                    sleep 5
+                    ;;
+                done|idle)
+                    echo "extract completed!"
+                    break
+                    ;;
+                error)
+                    echo "ERROR: $(jq -r .data.error <<<"$image_progress")"
+                    return 1
+                    break
+                    ;;
+                *)
+                    echo "ERROR: unknown extract status: $(jq <<<"$image_progress")"
+                    return 1
+                    break
+            esac
+        done
+    fi
 
     echo "Downloading the $image_file ($image_description) image netboot..."
     local result="$(curl \
@@ -469,6 +481,9 @@ function client_configure {
     local client_image_name="$1"
 
     case "$client_image_name" in
+        hello-world-debian-uki)
+            local client_image="hello-world-debian-uki.efi"
+            ;;
         debian-live)
             local client_image="debian-live-amd64.iso"
             ;;
@@ -593,6 +608,7 @@ EOF
 function configure {
     bootloader_upload
 
+    image_upload hello-world-debian-uki
     image_upload debian-live
     image_upload debian-13
     image_upload ubuntu-server-26-04

@@ -222,6 +222,14 @@ function image_upload {
             local image_description="Hello World Debian UKI"
             local image_boot_params=""
             ;;
+        hello-world-fedora-uki)
+            # see https://github.com/rgl/hello-world-fedora-uki
+            local image_distro="fedora"
+            local image_url="https://github.com/rgl/hello-world-fedora-uki/releases/download/v0.0.3/hello-world.efi"
+            local image_file="hello-world-fedora-uki.efi"
+            local image_description="Hello World Fedora UKI"
+            local image_boot_params=""
+            ;;
         debian-live)
             # see https://github.com/rgl/debian-live-builder-vagrant
             local image_distro="debian"
@@ -484,6 +492,9 @@ function client_configure {
         hello-world-debian-uki)
             local client_image="hello-world-debian-uki.efi"
             ;;
+        hello-world-fedora-uki)
+            local client_image="hello-world-fedora-uki.efi"
+            ;;
         debian-live)
             local client_image="debian-live-amd64.iso"
             ;;
@@ -609,6 +620,7 @@ function configure {
     bootloader_upload
 
     image_upload hello-world-debian-uki
+    image_upload hello-world-fedora-uki
     image_upload debian-live
     image_upload debian-13
     image_upload ubuntu-server-26-04

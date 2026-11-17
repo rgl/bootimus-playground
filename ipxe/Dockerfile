@@ -21,8 +21,8 @@ git clone https://github.com/ipxe/ipxe.git .
 # NB ipxe does not do consistent releases, so we checkout a specific commit.
 # see https://github.com/ipxe/ipxe/discussions/679#discussioncomment-5214424.
 # see https://github.com/ipxe/ipxe/commit/12798ec29aa8a64d8675c4378b99f5fe28447afb 2026-03-06T15:48:55.000Z aka v2.0.0
-# see https://github.com/ipxe/ipxe/commit/e9ffd2a88051d1c50cfb6f0660f24f4448a73c3d 2026-10-12T15:31:06.000Z
-git checkout e9ffd2a88051d1c50cfb6f0660f24f4448a73c3d
+# see https://github.com/ipxe/ipxe/commit/9261ebe38af0c0b38ac332adeec125a518845013 2026-11-12T12:01:50.000Z
+git checkout 9261ebe38af0c0b38ac332adeec125a518845013
 RUN_EOF
 RUN bash <<"RUN_EOF"
 set -euxo pipefail

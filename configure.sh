@@ -238,13 +238,13 @@ function image_upload {
             local image_description="Ubuntu Server 26.04 (Resolute Raccoon)"
             local image_boot_params=""
             ;;
-        fedora-server-44)
+        fedora-server-45)
             # see https://fedoraproject.org/server/
             local image_distro="fedora"
-            local image_url="https://download.fedoraproject.org/pub/fedora/linux/releases/44/Server/x86_64/iso/Fedora-Server-netinst-x86_64-44-1.7.iso"
-            local image_file="fedora-server-44-amd64.iso"
-            local image_description="Fedora Server 44"
-            local image_boot_params="boot-params-fedora-server-44.txt"
+            local image_url="https://download.fedoraproject.org/pub/fedora/linux/releases/45/Server/x86_64/iso/Fedora-Server-netinst-x86_64-45-1.4.iso"
+            local image_file="fedora-server-45-amd64.iso"
+            local image_description="Fedora Server 45"
+            local image_boot_params="boot-params-fedora-server-45.txt"
             ;;
         almalinux-10)
             # see https://almalinux.org
@@ -478,8 +478,8 @@ function client_configure {
         ubuntu-server-26-04)
             local client_image="ubuntu-server-26-04-amd64.iso"
             ;;
-        fedora-server-44)
-            local client_image="fedora-server-44-amd64.iso"
+        fedora-server-45)
+            local client_image="fedora-server-45-amd64.iso"
             ;;
         almalinux-10)
             local client_image="almalinux-10-amd64.iso"
@@ -596,7 +596,7 @@ function configure {
     image_upload debian-live
     image_upload debian-13
     image_upload ubuntu-server-26-04
-    image_upload fedora-server-44
+    image_upload fedora-server-45
     image_upload almalinux-10
     image_upload windows-pe
     image_upload windows-server-2025 && qemu_drivers_upload windows-server-2025
